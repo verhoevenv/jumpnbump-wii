@@ -1626,6 +1626,7 @@ static int menu_loop(void)
 
 int main(int argc, char *argv[])
 {
+	printf("\n\n");
 	int result;
 
 	if (init_program(argc, argv, pal) != 0)
@@ -2997,12 +2998,16 @@ int init_program(int argc, char *argv[], char *pal)
 		return 1;
 #endif
 
+    fatInitDefault();
+
 	srand(time(NULL));
 
 	if (hook_keyb_handler() != 0)
 		return 1;
 
 	memset(&main_info, 0, sizeof(main_info));
+    //TODO: add sound
+    //main_info.no_sound = 1;
 
 	strcpy(datfile_name, DATA_PATH);
 

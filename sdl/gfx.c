@@ -23,9 +23,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "globals.h"
+#include "../globals.h"
 #include "SDL_endian.h"
-#include "filter.h"
+#include "../filter.h"
 
 #ifdef _MSC_VER
     #include "jumpnbump32.xpm"
@@ -170,7 +170,7 @@ void open_screen(void)
 	int lval = 0;
 	int flags;
 
-	lval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+	lval = SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	if (lval < 0) {
 		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);

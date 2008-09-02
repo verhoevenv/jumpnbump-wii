@@ -40,6 +40,7 @@ char *message[] = {
 	"Linux port by Chuck Mason.",
 	"New SDL port by Florian Schulze.",
 	"http://www.icculus.org/jumpnbump/",
+    "Wii port by Vincent Verhoeven.",
 	"Ryan C. Gordon made networking possible again!",
 	"Visit our homepage at:",
 	"http://www.algonet.se/~mattiasb",

@@ -29,7 +29,7 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include "globals.h"
+#include "../globals.h"
 
 #ifdef USE_KAILLERA
 #include "SDL_thread.h"

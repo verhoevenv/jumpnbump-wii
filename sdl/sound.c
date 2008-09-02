@@ -23,8 +23,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "globals.h"
+#include "../globals.h"
 #include <limits.h>
+#include <errno.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -282,7 +283,6 @@ char dj_init(void)
 	main_info.no_sound = 1;
 	return 1;
 #endif
-
 	return 0;
 }
 
@@ -466,7 +466,7 @@ char dj_ready_mod(char mod_num)
 # if ((defined _MSC_VER) || (defined __MINGW32__))
 	char filename[] = "jnb.tmpmusic.mod";
 # else
-	char filename[] = "/tmp/jnb.tmpmusic.mod";
+	char filename[] = "jnb.tmpmusic.mod";
 # endif
 	unsigned char *fp;
 	int len;
