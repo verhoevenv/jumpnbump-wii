@@ -28,7 +28,7 @@ MODIFY_TARGET := gobpack jnbpack jnbunpack
 OBJS := fireworks.o main.o menu.o filter.o
 BINARIES := $(TARGET) jumpnbump.svgalib jumpnbump.fbcon $(MODIFY_TARGET) \
 	jnbmenu.tcl
-PREFIX-JNB ?= /data
+PREFIX-JNB ?= /apps
 
 #---------------------------------------------------------------------------------
 # options for code generation

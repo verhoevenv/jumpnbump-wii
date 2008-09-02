@@ -25,6 +25,7 @@
 
 #include "globals.h"
 #include <fcntl.h>
+#include <wiiuse.h/wpad.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -586,6 +587,8 @@ void processKillPacket(NetPacket *pkt)
 		dj_play_sfx(SFX_DEATH, (unsigned short)(SFX_DEATH_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
 		player[c1].bumps++;
 		player[c1].bumped[c2]++;
+        player[c2].rumble = 20;
+        WPAD_Rumble(c2,1);
 		s1 = player[c1].bumps % 100;
 		add_leftovers(0, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
 		add_leftovers(1, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
@@ -1952,6 +1955,11 @@ void steer_players(void)
 	update_player_actions();
 
 	for (c1 = 0; c1 < JNB_MAX_PLAYERS; c1++) {
+        if (player[c1].rumble > 0)
+            player[c1].rumble--;
+        else if (player[c1].rumble == 0){
+            WPAD_Rumble(c1,0);
+        }
 
 		if (player[c1].enabled == 1) {
 

@@ -169,7 +169,7 @@ extern int ai[JNB_MAX_PLAYERS];
 #elif _WIN32
 #define	DATA_PATH "data/jumpbump.dat"
 #else
-#define	DATA_PATH "%%PREFIX%%/share/jumpnbump/jumpbump.dat"
+#define	DATA_PATH "%%PREFIX%%/jumpnbump/jumpbump.dat"
 #endif
 #endif
 
@@ -209,6 +209,7 @@ typedef struct {
 	int x_add, y_add;
 	int direction, jump_ready, jump_abort, in_water;
 	int anim, frame, frame_tick, image;
+    int rumble;
 } player_t;
 
 typedef struct {
