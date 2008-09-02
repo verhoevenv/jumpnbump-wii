@@ -117,7 +117,7 @@ extern void dj_mix(void);
 extern char dj_set_num_sfx_channels(char num_channels);
 extern void dj_set_sfx_volume(char volume);
 extern char dj_get_sfx_volume(void);
-extern void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char panning, unsigned short delay, char channel);
+extern void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char panning, unsigned short delay, signed char channel);
 extern char dj_get_sfx_settings(unsigned char sfx_num, sfx_data *data);
 extern char dj_set_sfx_settings(unsigned char sfx_num, sfx_data *data);
 extern void dj_set_sfx_channel_volume(char channel_num, char volume);
