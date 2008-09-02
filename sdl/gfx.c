@@ -186,10 +186,13 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
+    SDL_ShowCursor(SDL_DISABLE);
+    /*
 	if(fullscreen)
 		SDL_ShowCursor(0);
 	else
 		SDL_ShowCursor(1);
+    */
 
 	SDL_WM_SetCaption("Jump'n'Bump","");
 
