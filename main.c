@@ -1550,7 +1550,7 @@ static int menu_loop(void)
 			put_text(main_info.view_page, 350, 80 + c1 * 30, str1, 2);
 		}
 
-		put_text(main_info.view_page, 200, 230, "Press ESC to continue", 2);
+		put_text(main_info.view_page, 200, 230, "Press HOME to continue", 2);
 
 		draw_end();
 
