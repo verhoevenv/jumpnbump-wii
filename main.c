@@ -3014,8 +3014,6 @@ int init_program(int argc, char *argv[], char *pal)
 		return 1;
 
 	memset(&main_info, 0, sizeof(main_info));
-    //TODO: add sound
-    //main_info.no_sound = 1;
 
 	strcpy(datfile_name, DATA_PATH);
 
