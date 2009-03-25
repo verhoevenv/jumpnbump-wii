@@ -156,7 +156,7 @@ $(TARGET): $(OBJS) $(SDL_TARGET) data globals.h
 $(OBJS): globals.h
 
 globals.h: globals.pre
-	sed -e "s#%%PREFIX%%#$(PREFIX-JNB)#g" < globals.pre > globals.h
+	sed -e "s#%%PREFIX%%#$(PREFIX-JNB)#g" < ../globals.pre > ../globals.h
 
 jnbmenu.tcl: jnbmenu.pre
 	sed -e "s#%%PREFIX%%#$(PREFIX-JNB)#g" < jnbmenu.pre > jnbmenu.tcl
