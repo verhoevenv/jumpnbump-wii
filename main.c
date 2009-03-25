@@ -25,7 +25,7 @@
 
 #include "globals.h"
 #include <fcntl.h>
-#include <wiiuse.h/wpad.h>
+#include <wiiuse/wpad.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
