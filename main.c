@@ -25,7 +25,9 @@
 
 #include "globals.h"
 #include <fcntl.h>
+#ifndef WIN32
 #include <wiiuse/wpad.h>
+#endif
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -237,7 +239,7 @@ struct {
 int pogostick, bunnies_in_space, jetpack, lord_of_the_flies, blood_is_thicker_than_water;
 
 
-#ifndef _MSC_VER
+#ifndef WIN32
 int filelength(int handle)
 {
 	struct stat buf;
@@ -574,7 +576,7 @@ void processKillPacket(NetPacket *pkt)
 		player[c2].image = player_anims[player[c2].anim].frame[player[c2].frame].image + player[c2].direction * 9;
 		if (main_info.no_gore == 0) {
 			for (c4 = 0; c4 < 6; c4++)
-				add_object(OBJ_FUR, (x >> 16) + 6 + rnd(5), (y >> 16) + 6 + rnd(5), (rnd(65535) - 32768) * 3, (rnd(65535) - 32768) * 3, 0, 44 + c2 * 8);
+				add_object(OBJ_FUR, (x >> 16) + 6 + rnd(5), (y >> 16) + 6 + rnd(5), (rnd(65535) - 32768) * 3, (rnd(65535) - 32768) * 3, 0, 44 + (c2 % JNB_MAX_PLAYERS_SPRITE_BLOODFUR) * 8);
 			for (c4 = 0; c4 < 6; c4++)
 				add_object(OBJ_FLESH, (x >> 16) + 6 + rnd(5), (y >> 16) + 6 + rnd(5), (rnd(65535) - 32768) * 3, (rnd(65535) - 32768) * 3, 0, 76);
 			for (c4 = 0; c4 < 6; c4++)
@@ -587,13 +589,34 @@ void processKillPacket(NetPacket *pkt)
 		dj_play_sfx(SFX_DEATH, (unsigned short)(SFX_DEATH_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
 		player[c1].bumps++;
 		player[c1].bumped[c2]++;
-        player[c2].rumble = 20;
-        WPAD_Rumble(c2,1);
+
+        player[c1].show_score = 60;//Show the score for 60 frames if scaled up.
+#ifndef WIN32
+        if (c2 < 4) //Rumble the wii controller for the first 4 players.
+        {
+            player[c2].rumble = 20;
+            WPAD_Rumble(c2,1);
+        }
+#endif
 		s1 = player[c1].bumps % 100;
-		add_leftovers(0, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
-		add_leftovers(1, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
-		add_leftovers(0, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
-		add_leftovers(1, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
+		if (c1 < 4)
+		{
+            add_leftovers(0, 385, 34 + c1 * 64, c1 * 18 + 9, &rabbit_gobs);
+            add_leftovers(1, 385, 34 + c1 * 64, c1 * 18 + 9, &rabbit_gobs);
+
+            add_leftovers(0, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
+            add_leftovers(1, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
+            add_leftovers(0, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
+            add_leftovers(1, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
+		}else{
+            add_leftovers(0, 385, 2 + (c1 - 4) * 64, (c1 % JNB_MAX_PLAYERS_SPRITE) * 18 + 9, &rabbit_gobs);
+            add_leftovers(1, 385, 2 + (c1 - 4) * 64, (c1 % JNB_MAX_PLAYERS_SPRITE) * 18 + 9, &rabbit_gobs);
+
+            add_leftovers(0, 360, 2 + (c1 - 4) * 64, s1 / 10, &number_gobs);
+            add_leftovers(1, 360, 2 + (c1 - 4) * 64, s1 / 10, &number_gobs);
+            add_leftovers(0, 376, 2 + (c1 - 4) * 64, s1 - (s1 / 10) * 10, &number_gobs);
+            add_leftovers(1, 376, 2 + (c1 - 4) * 64, s1 - (s1 / 10) * 10, &number_gobs);
+		}
 	}
 }
 
@@ -1167,30 +1190,13 @@ static void check_cheats(void)
 
 static void collision_check(void)
 {
-	int c1 = 0, c2 = 0, c3 = 0;
+	int c1 = 0, c2 = 0;
 	int l1;
 
 	/* collision check */
-	for (c3 = 0; c3 < 6; c3++) {
-		if (c3 == 0) {
-			c1 = 0;
-			c2 = 1;
-		} else if (c3 == 1) {
-			c1 = 0;
-			c2 = 2;
-		} else if (c3 == 2) {
-			c1 = 0;
-			c2 = 3;
-		} else if (c3 == 3) {
-			c1 = 1;
-			c2 = 2;
-		} else if (c3 == 4) {
-			c1 = 1;
-			c2 = 3;
-		} else if (c3 == 5) {
-			c1 = 2;
-			c2 = 3;
-		}
+	for(c1 = 0; c1 < JNB_MAX_PLAYERS; c1 ++)
+	for(c2 = c1 + 1; c2 < JNB_MAX_PLAYERS; c2 ++)
+	{
 		if (player[c1].enabled == 1 && player[c2].enabled == 1) {
 			if (labs(player[c1].x - player[c2].x) < (12L << 16) && labs(player[c1].y - player[c2].y) < (12L << 16)) {
 				if ((labs(player[c1].y - player[c2].y) >> 16) > 5) {
@@ -1257,6 +1263,13 @@ static void game_loop(void) {
 
 	intr_sysupdate();
 
+    /* fix white font */
+    for (i = 0; i < 16; i++) {
+        pal[(240 + i) * 3 + 0] = pal[(31 - i) * 3 + 0];
+        pal[(240 + i) * 3 + 1] = pal[(31 - i) * 3 + 1];
+        pal[(240 + i) * 3 + 2] = pal[(31 - i) * 3 + 2];
+    }
+
 	while (1) {
 		while (update_count) {
 
@@ -1300,7 +1313,14 @@ static void game_loop(void) {
 			main_info.page_info[main_info.draw_page].num_pobs = 0;
 			for (i = 0; i < JNB_MAX_PLAYERS; i++) {
 				if (player[i].enabled == 1)
+				{
 					main_info.page_info[main_info.draw_page].num_pobs++;
+					if (scale_up && player[i].show_score)
+                    {
+                        main_info.page_info[main_info.draw_page].num_pobs+=2;
+                        player[i].show_score--;
+                    }
+				}
 			}
 
 			update_objects();
@@ -1320,9 +1340,23 @@ static void game_loop(void) {
 					if (player[i].enabled == 1) {
 						main_info.page_info[main_info.draw_page].pobs[c2].x = player[i].x >> 16;
 						main_info.page_info[main_info.draw_page].pobs[c2].y = player[i].y >> 16;
-						main_info.page_info[main_info.draw_page].pobs[c2].image = player[i].image + i * 18;
+						main_info.page_info[main_info.draw_page].pobs[c2].image = player[i].image + (i % JNB_MAX_PLAYERS_SPRITE) * 18;
 						main_info.page_info[main_info.draw_page].pobs[c2].pob_data = &rabbit_gobs;
 						c2++;
+
+                        if (scale_up && player[i].show_score)
+                        {
+                            main_info.page_info[main_info.draw_page].pobs[c2].x = player[i].x >> 16;
+                            main_info.page_info[main_info.draw_page].pobs[c2].y = (player[i].y >> 16) - 10;
+                            main_info.page_info[main_info.draw_page].pobs[c2].image = 9 + (player[i].bumps / 10) % 10;
+                            main_info.page_info[main_info.draw_page].pobs[c2].pob_data = &font_gobs;
+                            c2++;
+                            main_info.page_info[main_info.draw_page].pobs[c2].x = (player[i].x >> 16) + 8;
+                            main_info.page_info[main_info.draw_page].pobs[c2].y = (player[i].y >> 16) - 10;
+                            main_info.page_info[main_info.draw_page].pobs[c2].image = 9 + player[i].bumps % 10;
+                            main_info.page_info[main_info.draw_page].pobs[c2].pob_data = &font_gobs;
+                            c2++;
+                        }
 					}
 				}
 
@@ -1527,14 +1561,14 @@ static int menu_loop(void)
 
 		draw_begin();
 
-		put_text(main_info.view_page, 100, 50, "DOTT", 2);
-		put_text(main_info.view_page, 160, 50, "JIFFY", 2);
-		put_text(main_info.view_page, 220, 50, "FIZZ", 2);
-		put_text(main_info.view_page, 280, 50, "MIJJI", 2);
 		put_text(main_info.view_page, 40, 80, "DOTT", 2);
-		put_text(main_info.view_page, 40, 110, "JIFFY", 2);
-		put_text(main_info.view_page, 40, 140, "FIZZ", 2);
-		put_text(main_info.view_page, 40, 170, "MIJJI", 2);
+		put_text(main_info.view_page, 40, 95, "JIFFY", 2);
+		put_text(main_info.view_page, 40, 110, "FIZZ", 2);
+		put_text(main_info.view_page, 40, 125, "MIJJI", 2);
+		put_text(main_info.view_page, 40, 140, "DOTT2", 2);
+		put_text(main_info.view_page, 40, 155, "JIFFY2", 2);
+		put_text(main_info.view_page, 40, 170, "FIZZ2", 2);
+		put_text(main_info.view_page, 40, 185, "MIJJI2", 2);
 
 		for (c1 = 0; c1 < JNB_MAX_PLAYERS; c1++) {
 			char str1[100];
@@ -1542,12 +1576,22 @@ static int menu_loop(void)
 			for (c2 = 0; c2 < JNB_MAX_PLAYERS; c2++) {
 				if (c2 != c1) {
 					sprintf(str1, "%d", player[c1].bumped[c2]);
-					put_text(main_info.view_page, 100 + c2 * 60, 80 + c1 * 30, str1, 2);
-				} else
-					put_text(main_info.view_page, 100 + c2 * 60, 80 + c1 * 30, "-", 2);
+                    if (scale_up)
+                        put_text(main_info.view_page, 88 + c2 * 30, 80 + c1 * 15, str1, 2);
+                    else
+                        put_text(main_info.view_page, 100 + c2 * 30, 80 + c1 * 15, str1, 2);
+				} else {
+                    if (scale_up)
+                        put_text(main_info.view_page, 88 + c2 * 30, 80 + c1 * 15, "-", 2);
+                    else
+                        put_text(main_info.view_page, 100 + c2 * 30, 80 + c1 * 15, "-", 2);
+				}
 			}
 			sprintf(str1, "%d", player[c1].bumps);
-			put_text(main_info.view_page, 350, 80 + c1 * 30, str1, 2);
+			if (scale_up)
+                put_text(main_info.view_page, 336, 80 + c1 * 15, str1, 1);
+			else
+                put_text(main_info.view_page, 350, 80 + c1 * 15, str1, 2);
 		}
 
 		put_text(main_info.view_page, 200, 230, "Press HOME to continue", 2);
@@ -1958,7 +2002,9 @@ void steer_players(void)
         if (player[c1].rumble > 0)
             player[c1].rumble--;
         else if (player[c1].rumble == 0){
+#ifndef WIN32
             WPAD_Rumble(c1,0);
+#endif
         }
 
 		if (player[c1].enabled == 1) {
@@ -2830,6 +2876,31 @@ int init_level(int level, char *pal)
 		}
 	}
 
+    //8 player hack, fix scoreboard. (copy from processKillPacket function)
+    for(c1=0;c1<8;c1++)
+    {
+        s1 = 0;
+        if (c1 < 4)
+        {
+            add_leftovers(0, 385, 34 + c1 * 64, c1 * 18 + 9, &rabbit_gobs);
+            add_leftovers(1, 385, 34 + c1 * 64, c1 * 18 + 9, &rabbit_gobs);
+
+            add_leftovers(0, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
+            add_leftovers(1, 360, 34 + c1 * 64, s1 / 10, &number_gobs);
+            add_leftovers(0, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
+            add_leftovers(1, 376, 34 + c1 * 64, s1 - (s1 / 10) * 10, &number_gobs);
+        }else{
+            add_leftovers(0, 385, 2 + (c1 - 4) * 64, (c1 % JNB_MAX_PLAYERS_SPRITE) * 18 + 9, &rabbit_gobs);
+            add_leftovers(1, 385, 2 + (c1 - 4) * 64, (c1 % JNB_MAX_PLAYERS_SPRITE) * 18 + 9, &rabbit_gobs);
+
+            add_leftovers(0, 360, 2 + (c1 - 4) * 64, s1 / 10, &number_gobs);
+            add_leftovers(1, 360, 2 + (c1 - 4) * 64, s1 / 10, &number_gobs);
+            add_leftovers(0, 376, 2 + (c1 - 4) * 64, s1 - (s1 / 10) * 10, &number_gobs);
+            add_leftovers(1, 376, 2 + (c1 - 4) * 64, s1 - (s1 / 10) * 10, &number_gobs);
+        }
+    }
+
+
 	return 0;
 
 }
@@ -3006,7 +3077,9 @@ int init_program(int argc, char *argv[], char *pal)
 		return 1;
 #endif
 
+#ifndef WIN32
     fatInitDefault();
+#endif
 
 	srand(time(NULL));
 
@@ -3018,7 +3091,7 @@ int init_program(int argc, char *argv[], char *pal)
 	strcpy(datfile_name, DATA_PATH);
 
 	force2 = force3 = 0;
-
+set_scaling(1);
 	if (argc > 1) {
 		for (c1 = 1; c1 < argc; c1++) {
 			if (stricmp(argv[c1], "-nosound") == 0)
@@ -3109,6 +3182,11 @@ int init_program(int argc, char *argv[], char *pal)
 			}
 		}
 	}
+
+	init_inputs();
+
+	open_screen();
+//	level_select();
 
 	preread_datafile(datfile_name);
 
@@ -3295,8 +3373,6 @@ all provided the user didn't choose one on the commandline. */
 
 	setpalette(0, 256, pal);
 
-	init_inputs();
-
 	recalculate_gob(&font_gobs, pal);
 
 	if (main_info.joy_enabled == 1 && main_info.fireworks == 0) {
@@ -3457,6 +3533,15 @@ int read_level(void)
 
 	for (c2 = 0; c2 < 22; c2++)
 		ban_map[16][c2] = BAN_SOLID;
+
+    if (scale_up)
+    {
+        for (c2 = 0; c2 < 17; c2++)
+        {
+            ban_map[c2][0] = BAN_SOLID;
+            ban_map[c2][21] = BAN_SOLID;
+        }
+    }
 
 	return 0;
 

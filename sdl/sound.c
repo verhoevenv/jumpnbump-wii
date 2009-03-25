@@ -1,7 +1,7 @@
 /*
  * sound.c
  * Copyright (C) 1998 Brainchild Design - http://brainchilddesign.com/
- * 
+ *
  * Copyright (C) 2001 Chuck Mason <cemason@users.sourceforge.net>
  *
  * Copyright (C) 2002 Florian Schulze <crow@icculus.org>
@@ -29,13 +29,15 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include "SDL.h"
+#include "SDL/SDL.h"
 
 #ifndef NO_SDL_MIXER
-#include "SDL_mixer.h"
+#include "SDL/SDL_mixer.h"
 
 static Mix_Music *current_music = (Mix_Music *) NULL;
 #endif
+
+#define VOLUME_BOOST 4
 
 sfx_data sounds[NUM_SFX];
 
@@ -100,7 +102,7 @@ int addsfx(signed short *data, int len, int loop, int samplerate, int channel)
 	/* Set pointer to raw data. */
 	channelinfo[channel].data = data;
 	channelinfo[channel].startdata = data;
-      
+
 	/* Set pointer to end of raw data. */
 	channelinfo[channel].enddata = channelinfo[channel].data + len - 1;
 	channelinfo[channel].samplerate = samplerate;
@@ -127,19 +129,19 @@ static void updateSoundParams(int slot, int volume)
 	channelinfo[slot].step = ((channelinfo[slot].samplerate<<16)/audio_rate);
 
 	leftvol = volume;
-	rightvol= volume;  
+	rightvol= volume;
 
 	/* Sanity check, clamp volume. */
 	if (rightvol < 0)
 		rightvol = 0;
 	if (rightvol > 127)
 		rightvol = 127;
-    
+
 	if (leftvol < 0)
 		leftvol = 0;
 	if (leftvol > 127)
 		leftvol = 127;
-    
+
 	channelinfo[slot].leftvol = leftvol;
 	channelinfo[slot].rightvol = rightvol;
 }
@@ -217,7 +219,7 @@ void mix_sound(void *unused, Uint8 *stream, int len)
 				}
 			}
 		}
-  
+
 		/* Clamp to range. Left hardware channel. */
 		/* Has been char instead of short. */
 		/* if (dl > 127) *leftout = 127; */
@@ -256,7 +258,7 @@ char dj_init(void)
 	int audio_channels = 2;
 	int audio_buffers = 4096;
 
-	open_screen();
+	//open_screen();
 
 	if (main_info.no_sound)
 		return 0;
@@ -357,7 +359,7 @@ void dj_set_sfx_volume(char volume)
 		return;
 
 	SDL_LockAudio();
-	global_sfx_volume = volume*2;
+	global_sfx_volume = volume*VOLUME_BOOST;
 	SDL_UnlockAudio();
 }
 
@@ -407,7 +409,7 @@ void dj_set_sfx_channel_volume(char channel_num, char volume)
 		return;
 
 	SDL_LockAudio();
-	updateSoundParams(channel_num, volume*2);
+	updateSoundParams(channel_num, volume*VOLUME_BOOST);
 	SDL_UnlockAudio();
 }
 
@@ -426,7 +428,7 @@ char dj_load_sfx(unsigned char * file_handle, char *filename, int file_length, c
 	unsigned int i;
 	unsigned char *src;
 	unsigned short *dest;
-	
+
 	if (main_info.no_sound)
 		return 0;
 
@@ -554,7 +556,7 @@ void dj_set_mod_volume(char volume)
 	if (main_info.no_sound)
 		return;
 
-	Mix_VolumeMusic(volume);
+	Mix_VolumeMusic(volume * VOLUME_BOOST);
 #endif
 }
 

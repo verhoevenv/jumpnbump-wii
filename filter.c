@@ -36,7 +36,7 @@ void init_scale2x(void)
 	if (scale2x_inited)
 		return;
 
-	//-------------------------------------------------------------------------  
+	//-------------------------------------------------------------------------
 	// scale2x takes the following source:
 	// A B C
 	// D E F
@@ -55,7 +55,7 @@ void init_scale2x(void)
 	// equivalency into a single byte with the getCode() macro
 	//
 	// #define getCode(b,f,h,d) ( (b == f)<<0 | (f == h)<<1 | (h == d)<<2 | (d == b)<<3 )
-  
+
 	// encode the scale2x conditionals into a lookup code
 	for (i=0; i<16; i++) {
 		//  E0 = D == B && B != F && D != H ? D : E; // 10-0 => 1000 or 1010 => 8 or A
@@ -69,15 +69,40 @@ void init_scale2x(void)
 	}
 }
 
+void simple_do_scale2x(unsigned char *src,
+		int src_width,
+		int src_height,
+		unsigned char *dst)
+{
+    int x, y;
+    for (y=0;y<src_height;y++)
+    {
+        for (x=0;x<src_width;x++)
+        {
+            dst[x*2+y*2*src_width*2] = src[x+y*src_width];
+            dst[x*2+y*2*src_width*2+1] = src[x+y*src_width];
+            dst[x*2+y*2*src_width*2+src_width*2] = src[x+y*src_width];
+            dst[x*2+y*2*src_width*2+src_width*2+1] = src[x+y*src_width];
+        }
+    }
+}
+
 void do_scale2x(unsigned char *src,
 		int src_width,
 		int src_height,
 		unsigned char *dst)
 {
+    if (src_width < 2 || src_height < 2)
+    {
+        //The scale2x code does not work with 1 pixel width or height pics
+        simple_do_scale2x(src, src_width, src_height, dst);
+        return;
+    }
+
 	int x;
 	int y;
 	int dst_width = src_width * 2;
-	int dst_height = src_height * 2;
+	//int dst_height = src_height * 2;
 	int code;
 	byte rowColors[3];
 	byte *e0;

@@ -1,7 +1,7 @@
 /*
  * gfx.c
  * Copyright (C) 1998 Brainchild Design - http://brainchilddesign.com/
- * 
+ *
  * Copyright (C) 2001 Chuck Mason <cemason@users.sourceforge.net>
  *
  * Copyright (C) 2002 Florian Schulze <crow@icculus.org>
@@ -24,7 +24,7 @@
  */
 
 #include "../globals.h"
-#include "SDL_endian.h"
+#include "SDL/SDL_endian.h"
 #include "../filter.h"
 
 #ifdef _MSC_VER
@@ -51,6 +51,11 @@ static void *background = NULL;
 static int background_drawn;
 static void *mask = NULL;
 static int dirty_blocks[2][25*16*2];
+
+static int draw_offset_left_blocks = 0;
+static int draw_offset_top = 0;
+static int draw_max_height = 256;
+static int draw_max_width_blocks = 25;
 
 static SDL_Surface *load_xpm_from_array(char **xpm)
 {
@@ -179,7 +184,16 @@ void open_screen(void)
 	flags = SDL_SWSURFACE;
 	if (fullscreen)
 		flags |= SDL_FULLSCREEN;
-	jnb_surface = SDL_SetVideoMode(screen_width, screen_height, 8, flags);
+    if (scale_up)
+    {
+        jnb_surface = SDL_SetVideoMode(640, 480, 8, flags);
+        draw_offset_left_blocks = 1;
+        draw_offset_top = 16;
+        draw_max_height = 480 + 16;
+        draw_max_width_blocks = 21;
+    }else{
+        jnb_surface = SDL_SetVideoMode(screen_width, screen_height, 8, flags);
+    }
 
 	if (!jnb_surface) {
 		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
@@ -330,7 +344,7 @@ void flippage(int page)
 
 	SDL_LockSurface(jnb_surface);
 	if (!jnb_surface->pixels) {
-		
+
 		for (x=0; x<(25*16); x++) {
 			dirty_blocks[0][x] = 1;
 			dirty_blocks[1][x] = 1;
@@ -340,19 +354,19 @@ void flippage(int page)
 	}
 	dest=(unsigned char *)jnb_surface->pixels;
 	src=screen_buffer[page];
-	for (y=0; y<screen_height; y++) {
-		for (x=0; x<25; x++) {
+	for (y=draw_offset_top; y<draw_max_height; y++) {
+		for (x=draw_offset_left_blocks; x<draw_max_width_blocks; x++) {
 			int count;
 			int test_x;
 
 			count=0;
 			test_x=x;
-			while ( (test_x<25) && (dirty_blocks[page][(y>>dirty_block_shift)*25+test_x]) ) {
+			while ( (test_x<draw_max_width_blocks) && (dirty_blocks[page][(y>>dirty_block_shift)*25+test_x]) ) {
 				count++;
 				test_x++;
 			}
 			if (count) {
-				memcpy(	&dest[y*jnb_surface->pitch+(x<<dirty_block_shift)],
+				memcpy(	&dest[(y-draw_offset_top)*jnb_surface->pitch+((x-draw_offset_left_blocks)<<dirty_block_shift)],
 					&src[y*screen_pitch+((x<<dirty_block_shift))],
 					((16<<dirty_block_shift)>>4)*count);
 			}
@@ -814,7 +828,85 @@ int register_gob(unsigned char *handle, gob_t *gob, int len)
 	memcpy(gob_data, handle, len);
 
 	gob->num_images = (short)((gob_data[0]) + (gob_data[1] << 8));
+#ifdef HAX_PLAYER_PAL
+if (gob == &rabbit_gobs)
+{
+    gob->num_images *= 2;
 
+	gob->width = malloc(gob->num_images*sizeof(int));
+	gob->height = malloc(gob->num_images*sizeof(int));
+	gob->hs_x = malloc(gob->num_images*sizeof(int));
+	gob->hs_y = malloc(gob->num_images*sizeof(int));
+	gob->data = malloc(gob->num_images*sizeof(void *));
+	gob->orig_data = malloc(gob->num_images*sizeof(void *));
+	for (i=0; i<gob->num_images/2; i++) {
+		int image_size;
+		int offset;
+
+		offset = (gob_data[i*4+2]) + (gob_data[i*4+3] << 8) + (gob_data[i*4+4] << 16) + (gob_data[i*4+5] << 24);
+
+		gob->width[i]  = (short)((gob_data[offset]) + (gob_data[offset+1] << 8)); offset += 2;
+		gob->height[i] = (short)((gob_data[offset]) + (gob_data[offset+1] << 8)); offset += 2;
+		gob->hs_x[i]   = (short)((gob_data[offset]) + (gob_data[offset+1] << 8)); offset += 2;
+		gob->hs_y[i]   = (short)((gob_data[offset]) + (gob_data[offset+1] << 8)); offset += 2;
+
+		image_size = gob->width[i] * gob->height[i];
+		gob->orig_data[i] = malloc(image_size);
+		memcpy(gob->orig_data[i], &gob_data[offset], image_size);
+		if (scale_up) {
+			image_size = gob->width[i] * gob->height[i] * 4;
+			gob->data[i] = malloc(image_size);
+			do_scale2x((unsigned char *)gob->orig_data[i], gob->width[i], gob->height[i], (unsigned char *)gob->data[i]);
+		} else {
+			gob->data[i] = (unsigned short *)gob->orig_data[i];
+		}
+	}
+	for (i=0; i<gob->num_images/2; i++) {
+	    int image_size;
+		int offset, j, tmp;
+
+		offset = (gob_data[i*4+2]) + (gob_data[i*4+3] << 8) + (gob_data[i*4+4] << 16) + (gob_data[i*4+5] << 24);
+		j = i + gob->num_images/2;
+
+		gob->width[j]  = gob->width[i];
+		gob->height[j] = gob->height[i];
+		gob->hs_x[j]   = gob->hs_x[i];
+		gob->hs_y[j]   = gob->hs_y[i];
+
+		image_size = gob->width[i] * gob->height[i];
+		gob->orig_data[j] = malloc(image_size);
+		memcpy(gob->orig_data[j], gob->orig_data[i], image_size);
+		for(tmp=0; tmp<image_size;tmp++)
+		{
+		    unsigned char c = ((unsigned char *)gob->orig_data[j])[tmp];
+		    switch (i / (gob->num_images/8))
+		    {
+            case 0:
+                if (c > 128)
+                    c -= 128 + 16;
+                break;
+            case 1:
+            case 2:
+                if (c > 64)
+                    c -= 64;
+                break;
+            case 3:
+                if (c > 128)
+                    c -= 128;
+                break;
+		    }
+            ((unsigned char *)gob->orig_data[j])[tmp] = c;
+		}
+		if (scale_up) {
+			image_size = gob->width[j] * gob->height[j] * 4;
+			gob->data[j] = malloc(image_size);
+			do_scale2x((unsigned char *)gob->orig_data[j], gob->width[j], gob->height[j], (unsigned char *)gob->data[j]);
+		} else {
+			gob->data[j] = (unsigned short *)gob->orig_data[j];
+		}
+	}
+}else{
+#endif
 	gob->width = malloc(gob->num_images*sizeof(int));
 	gob->height = malloc(gob->num_images*sizeof(int));
 	gob->hs_x = malloc(gob->num_images*sizeof(int));
@@ -843,6 +935,9 @@ int register_gob(unsigned char *handle, gob_t *gob, int len)
 			gob->data[i] = (unsigned short *)gob->orig_data[i];
 		}
 	}
+#ifdef HAX_PLAYER_PAL
+}
+#endif
 	free(gob_data);
 	return 0;
 }

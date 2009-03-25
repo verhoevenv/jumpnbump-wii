@@ -19,7 +19,7 @@ TARGET := jumpnbump
 #TARGET      :=  $(notdir $(CURDIR))
 BUILD       :=  build
 SOURCES     :=  . sdl
-DATA        :=  data  
+DATA        :=  data
 INCLUDES    :=
 
 
@@ -34,8 +34,8 @@ PREFIX-JNB ?= /apps
 # options for code generation
 #---------------------------------------------------------------------------------
 
-SDL_CFLAGS := `sdl-config --cflags`
-SDL_LIBS := `sdl-config --libs`
+SDL_CFLAGS :=
+SDL_LIBS := -lSDL
 #CFLAGS = -Wall -O2 $(MACHDEP) -ffast-math -funroll-loops -Dstricmp=strcasecmp \
 #    -Dstrnicmp=strncasecmp -DUSE_SDL -DNDEBUG -I. $(SDL_CFLAGS) \
 #    -I$(DEVKITPPC)/local/include -DUSE_NET -DZLIB_SUPPORT -DBZLIB_SUPPORT
@@ -51,14 +51,14 @@ LDFLAGS =   -g $(MACHDEP) -mrvl -Wl,-Map,$(notdir $@).map
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
 #LIBS    :=  -lwiisprite $(SDL_LIBS) -lSDL_mixer -lSDL_net -lbz2 -lpng -lz -lwiiuse -lbte -lfat -logc -lm
-LIBS    :=  -lSDL_mixer -lz $(SDL_LIBS) -lwiiuse -lbte -lfat -logc -lm  
+LIBS    :=  -lSDL_mixer -lz $(SDL_LIBS) -lwiiuse -lbte -lfat -logc -lm
 
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS := 
+LIBDIRS :=
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -115,13 +115,13 @@ export OUTPUT   :=  $(CURDIR)/$(TARGET)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	[ -d $@ ] || mkdir -p $@
+	make -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	echo clean ...
+	rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 #clean:
 #    cd sdl && make clean

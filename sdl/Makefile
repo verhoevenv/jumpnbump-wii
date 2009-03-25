@@ -19,9 +19,9 @@ OBJS := gfx.o interrpt.o sound.o input.o
 TARGET := ../sdl.a
 BUILD       :=  build
 SOURCES     :=  .
-DATA        :=  data  
+DATA        :=  data
 SDL_CFLAGS := `sdl-config --cflags`
-INCLUDES    := 
+INCLUDES    :=
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -38,13 +38,13 @@ LDFLAGS =   -g $(MACHDEP) -mrvl -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS    :=  -lwiisprite -lpng -lz -lwiiuse -lbte -lfat -logc -lm 
+LIBS    :=  -lwiisprite -lpng -lz -lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS := 
+LIBDIRS :=
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -101,13 +101,13 @@ export OUTPUT   :=  $(CURDIR)/$(TARGET)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	[ -d $@ ] || mkdir -p $@
+	make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 all: $(TARGET)
 

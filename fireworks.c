@@ -1,7 +1,7 @@
 /*
  * fireworks.c
  * Copyright (C) 1998 Brainchild Design - http://brainchilddesign.com/
- * 
+ *
  * Copyright (C) 2001 Chuck Mason <cemason@users.sourceforge.net>
  *
  * Copyright (C) 2002 Florian Schulze <crow@icculus.org>
@@ -29,7 +29,7 @@ extern unsigned int ban_map[17][22];
 
 void fireworks(void)
 {
-	char *handle;
+	unsigned char *handle;
 	int c1, c2;
 	int s1, s2, s3;
 	char pal[768];
@@ -218,7 +218,7 @@ void fireworks(void)
 		dj_mix();
 
 		draw_pobs(main_info.draw_page);
-		
+
 		draw_end();
 
 		main_info.draw_page ^= 1;

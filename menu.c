@@ -1,7 +1,7 @@
 /*
  * menu.c
  * Copyright (C) 1998 Brainchild Design - http://brainchilddesign.com/
- * 
+ *
  * Copyright (C) 2001 Chuck Mason <cemason@users.sourceforge.net>
  *
  * Copyright (C) 2002 Florian Schulze <crow@icculus.org>
@@ -41,6 +41,7 @@ char *message[] = {
 	"New SDL port by Florian Schulze.",
 	"http://www.icculus.org/jumpnbump/",
     "Wii port by Vincent Verhoeven.",
+    "8 player Wii update by Daid.",
 	"Ryan C. Gordon made networking possible again!",
 	"Visit our homepage at:",
 	"http://www.algonet.se/~mattiasb",
@@ -94,6 +95,21 @@ int menu(void)
 	addkey((KEY_PL2_JUMP & 0x7f) | 0x8000);
 	addkey((KEY_PL3_JUMP & 0x7f) | 0x8000);
 	addkey((KEY_PL4_JUMP & 0x7f) | 0x8000);
+
+	addkey((KEY_PL5_LEFT & 0x7f) | 0x8000);
+	addkey((KEY_PL6_LEFT & 0x7f) | 0x8000);
+	addkey((KEY_PL7_LEFT & 0x7f) | 0x8000);
+	addkey((KEY_PL8_LEFT & 0x7f) | 0x8000);
+
+	addkey((KEY_PL5_RIGHT & 0x7f) | 0x8000);
+	addkey((KEY_PL6_RIGHT & 0x7f) | 0x8000);
+	addkey((KEY_PL7_RIGHT & 0x7f) | 0x8000);
+	addkey((KEY_PL8_RIGHT & 0x7f) | 0x8000);
+
+	addkey((KEY_PL5_JUMP & 0x7f) | 0x8000);
+	addkey((KEY_PL6_JUMP & 0x7f) | 0x8000);
+	addkey((KEY_PL7_JUMP & 0x7f) | 0x8000);
+	addkey((KEY_PL8_JUMP & 0x7f) | 0x8000);
 
 	mod_vol = 0;
 	mod_fade_direction = 1;
@@ -447,8 +463,8 @@ int menu(void)
 
 			main_info.page_info[main_info.draw_page].num_pobs = 0;
 
-			for (c1 = 3; c1 >= 0; c1--)
-				add_pob(main_info.draw_page, player[c1].x >> 16, player[c1].y >> 16, player[c1].image + c1 * 18, &rabbit_gobs);
+			for (c1 = JNB_MAX_PLAYERS - 1; c1 >= 0; c1--)
+				add_pob(main_info.draw_page, player[c1].x >> 16, player[c1].y >> 16, player[c1].image + (c1 % JNB_MAX_PLAYERS_SPRITE) * 18, &rabbit_gobs);
 
 			update_objects();
 
@@ -536,9 +552,9 @@ int menu(void)
 			if (update_count == 1) {
 				main_info.draw_page ^= 1;
 				main_info.view_page ^= 1;
-	
+
 				flippage(main_info.view_page);
-	
+
 				wait_vrt(1);
 			}
 
@@ -571,7 +587,7 @@ int menu(void)
 
 int menu_init(void)
 {
-	char *handle;
+	unsigned char *handle;
 	int c1;
 
 	fillpalette(0, 0, 0);

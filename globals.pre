@@ -32,17 +32,22 @@ extern "C" {
 
 #include "config.h"
 
+//Disable me to remove the player 5-8 palette hack. Makes them the same pictures are player 1-4
+#define HAX_PLAYER_PAL
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifndef _MSC_VER
-#include <strings.h>
+//#include <strings.h>
 #endif
 #include <time.h>
 #include <math.h>
 #include "dj.h"
+#ifndef WIN32
 #include <fat.h>
+#endif
 
 #ifdef DOS
 # include <conio.h>
@@ -63,14 +68,21 @@ extern "C" {
 #else
 # ifdef USE_SDL
 #  include <sys/stat.h>
-#  include "SDL.h"
+#  include "SDL/SDL.h"
 #  if USE_SDL_MIXER
-#   include "SDL_mixer.h"
+#   include "SDL/SDL_mixer.h"
 #  endif
 # endif
 #endif
 
-#define JNB_MAX_PLAYERS 4
+#define JNB_MAX_PLAYERS 8
+
+#ifdef HAX_PLAYER_PAL
+#define JNB_MAX_PLAYERS_SPRITE 8
+#else
+#define JNB_MAX_PLAYERS_SPRITE 4
+#endif
+#define JNB_MAX_PLAYERS_SPRITE_BLOODFUR 4
 
 #define JNB_INETPORT 11111
 
@@ -80,7 +92,7 @@ void tellServerPlayerMoved(int playerid, int movement_type, int newval);
 #define MOVEMENT_RIGHT 2
 #define MOVEMENT_UP    3
 
-#define JNB_VERSION "1.51"
+#define JNB_VERSION "1.51.EXP"
 
 #define JNB_WIDTH 400
 #define JNB_HEIGHT 256
@@ -100,18 +112,31 @@ extern int ai[JNB_MAX_PLAYERS];
 #define KEY_PL2_RIGHT	0x20
 #define KEY_PL2_JUMP 0x11
 #else
-#define KEY_PL1_LEFT SDLK_LEFT
-#define KEY_PL1_RIGHT	SDLK_RIGHT
-#define KEY_PL1_JUMP SDLK_UP
-#define KEY_PL2_LEFT SDLK_a
-#define KEY_PL2_RIGHT	SDLK_d
-#define KEY_PL2_JUMP SDLK_w
-#define KEY_PL3_LEFT SDLK_j
-#define KEY_PL3_RIGHT	SDLK_l
-#define KEY_PL3_JUMP SDLK_i
-#define KEY_PL4_LEFT SDLK_KP4
+#define KEY_PL1_LEFT    SDLK_LEFT
+#define KEY_PL1_RIGHT   SDLK_RIGHT
+#define KEY_PL1_JUMP    SDLK_UP
+#define KEY_PL2_LEFT    SDLK_z
+#define KEY_PL2_RIGHT	SDLK_c
+#define KEY_PL2_JUMP    SDLK_s
+#define KEY_PL3_LEFT    SDLK_v
+#define KEY_PL3_RIGHT	SDLK_n
+#define KEY_PL3_JUMP    SDLK_g
+#define KEY_PL4_LEFT    SDLK_KP4
 #define KEY_PL4_RIGHT	SDLK_KP6
-#define KEY_PL4_JUMP SDLK_KP8
+#define KEY_PL4_JUMP    SDLK_KP8
+
+#define KEY_PL5_LEFT    SDLK_k
+#define KEY_PL5_RIGHT	SDLK_l
+#define KEY_PL5_JUMP    SDLK_o
+#define KEY_PL6_LEFT    SDLK_a
+#define KEY_PL6_RIGHT	SDLK_d
+#define KEY_PL6_JUMP    SDLK_w
+#define KEY_PL7_LEFT    SDLK_r
+#define KEY_PL7_RIGHT	SDLK_y
+#define KEY_PL7_JUMP    SDLK_5
+#define KEY_PL8_LEFT    SDLK_i
+#define KEY_PL8_RIGHT	SDLK_p
+#define KEY_PL8_JUMP    SDLK_9
 #endif
 
 #define NUM_POBS 200
@@ -173,6 +198,13 @@ extern int ai[JNB_MAX_PLAYERS];
 #endif
 #endif
 
+#ifndef WIN32
+#define	EXTRA_LEVELS_PATH "levels"
+#else
+#define	EXTRA_LEVELS_PATH "/apps/jumpnbump/levels"
+#endif
+
+
 typedef struct {
 	int num_images;
 	int *width;
@@ -210,6 +242,7 @@ typedef struct {
 	int direction, jump_ready, jump_abort, in_water;
 	int anim, frame, frame_tick, image;
     int rumble;
+    int show_score;
 } player_t;
 
 typedef struct {
@@ -357,6 +390,8 @@ int hook_keyb_handler(void);
 void remove_keyb_handler(void);
 int key_pressed(int key);
 int addkey(unsigned int key);
+
+void level_select();
 
 /* sound-linux.c */
 #ifdef LINUX
