@@ -31,6 +31,10 @@
 #endif
 #include "../globals.h"
 
+#ifndef WIN32
+#include <wiiuse/wpad.h>
+#endif
+
 #ifdef USE_KAILLERA
 #include "SDL_thread.h"
 #include "SDL_mutex.h"
@@ -424,6 +428,14 @@ int intr_sysupdate()
 		}
 		i++;
 	}
+
+#ifndef WIN32
+	WPAD_ScanPads();
+	if ((WPAD_ButtonsHeld(WPAD_CHAN_0)&WPAD_BUTTON_HOME))
+		addkey(1 & 0x7f);
+	else
+		addkey(1 | 0x8000);
+#endif
 
 	SDL_Delay(1);
 	now = SDL_GetTicks();
