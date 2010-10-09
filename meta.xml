@@ -2,11 +2,11 @@
 <app version="1">
   <name>Jump 'n Bump</name>
   <coder>Amarth, Daid</coder>
-  <version>0.3</version>
-  <release_date>200904250000</release_date>
+  <version>0.3.1</version>
+  <release_date>201010090000</release_date>
   <short_description>Bunnies and blood</short_description>
   <long_description>Jump 'n Bump is a game by Brainchild Design, ported to SDL and now the Wii. Control one of 8 rabbits in a quest to stomp other rabbits on the head and make them explode in bloody bits.
-  
+
 Hold controller sideways to play. Left/right to move, "2" button to jump. Home button on first controller to quit. Nunchucks and classic controllers can also be used to control additional bunnies.
   </long_description>
 </app>
