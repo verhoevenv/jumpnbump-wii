@@ -2825,10 +2825,10 @@ int init_level(int level, char *pal)
 	register_mask(mask_pic);
 
 	for (c1 = 0; c1 < JNB_MAX_PLAYERS; c1++) {
+		player[c1].bumps = 0;
+		for (c2 = 0; c2 < JNB_MAX_PLAYERS; c2++)
+			player[c1].bumped[c2] = 0;
 		if (player[c1].enabled == 1) {
-			player[c1].bumps = 0;
-			for (c2 = 0; c2 < JNB_MAX_PLAYERS; c2++)
-				player[c1].bumped[c2] = 0;
 			position_player(c1);
 		}
 	}
